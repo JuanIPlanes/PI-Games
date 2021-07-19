@@ -9,7 +9,7 @@ function* IDS() {
 }
 module.exports = (sequelize) => {
     const IDMkr = IDS()
-    const { INTEGER, STRING, DATE } = DataTypes;
+    const { INTEGER, STRING } = DataTypes;
     // defino el modelo
     sequelize.define('pokemon', self = {
         id: {
