@@ -11,7 +11,7 @@ module.exports = (sequelize) => {
     const IDMkr = IDS()
     const { INTEGER, STRING } = DataTypes;
     // defino el modelo
-    sequelize.define('pokemon', self = {
+    sequelize.define('gender', self = {
         id: {
             type: INTEGER,
             defaultValue: () => {
