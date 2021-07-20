@@ -41,26 +41,29 @@ exports.getGenres = void 0;
 // GET https://api.rawg.io/api/games?search={game}
 // GET https://api.rawg.io/api/genres
 // GET https://api.rawg.io/api/games/{id}
-var db_1 = require("./db");
 var axios_1 = require("axios");
-var API_KEY = process.env.API_KEY;
+var API_KEY = process.env.API_KEY, _a = require("./db"), Genre = _a.Genre, Videogame = _a.Videogame;
 function getGenres() {
     return __awaiter(this, void 0, void 0, function () {
         var _this = this;
         return __generator(this, function (_a) {
-            axios_1["default"].get("https://api.rawg.io/api/genres?key=" + API_KEY, { responseType: 'json' })
+            axios_1["default"]
+                .get("https://api.rawg.io/api/genres?key=" + API_KEY, { responseType: 'json' })
                 .then(function (_a) {
                 var data = _a.data;
                 return data.results;
             })
-                .then(function (genres) { return genres.map(function (genre) { var _a; return ({ name: (_a = genre.name) !== null && _a !== void 0 ? _a : "desconocido" }); }); }) //!geting names of genre from array of genres
-                .then(function (r) { console.log(r + "*******************************"); return r; })
+                .then(function (genres) { return genres.map(function (_a) {
+                var _b = _a.name, name = _b === void 0 ? String : _b;
+                return ({ name: name !== null && name !== void 0 ? name : "desconocido" });
+            }); })
+                //!geting names of genre from array of genres
                 .then(function (genreNames) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, db_1.Genre.bulkCreate(genreNames)];
-                    case 1: return [2 /*return*/, (_a.sent()) || alert(genreNames)];
+                    case 0: return [4 /*yield*/, Genre.bulkCreate(genreNames)];
+                    case 1: return [2 /*return*/, _a.sent()];
                 }
-            }); }); }); //!create all genres in db 
+            }); }); });
             return [2 /*return*/];
         });
     });
