@@ -6,7 +6,7 @@ const router = require('express').Router()
 
 // Configurar los routers
 router.use('/', postGame);
-router.use('/:id', getById);
+router.use('/', getById);
 router.use('/', getByName);
 router.get('/', gameList);
 
