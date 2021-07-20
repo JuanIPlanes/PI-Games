@@ -20,7 +20,7 @@ module.exports = (sequelize) => {
       primaryKey: true
     },
     name: {
-      type: STRING,
+      type: STRING(130),
       allowNull: false,
       unique: true,
       // validate: {
@@ -38,7 +38,7 @@ module.exports = (sequelize) => {
       // },
     },
     description: {
-      type: INTEGER,
+      type: STRING(255),
       allowNull: false,
     },
     releaseDate: {
@@ -50,7 +50,7 @@ module.exports = (sequelize) => {
       allowNull: true,
     },
     plataform: {
-      type: INTEGER,
+      type: STRING(30),
       allowNull: false,
     }
   });

@@ -30,13 +30,16 @@ let capsEntries = entries.map((entry) => [entry[0][0].toUpperCase() + entry[0].s
 sequelize.models = Object.fromEntries(capsEntries);
 
 // En sequelize.models están todos los modelos importados como propiedades
-const { Videogame, Gender } = sequelize.models;
+const { Videogame, Genre } = sequelize.models;
 
 // Aca vendrian las relaciones
 // Product.hasMany(Reviews);
-Videogame.belongsToMany(Gender, { through: "videogame_gender" })
-Gender.belongsToMany(Videogame, { through: "videogame_gender" })
+Videogame.belongsToMany(Genre, { through: "videogame_genre" })
+Genre.belongsToMany(Videogame, { through: "videogame_genre" })                    
 module.exports = {
   ...sequelize.models, // para poder importar los modelos así: const { Product, User } = require('./db.js');
+  Genre: sequelize.models.Genre,
+  Videogame: sequelize.models.Videogame,
+  
   conn: sequelize,     // para importart la conexión { conn } = require('./db.js');
 };
