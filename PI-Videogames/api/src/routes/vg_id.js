@@ -37,15 +37,36 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 var express = require("express");
+var functions_js_1 = require("../functions.js");
 var router = express.Router();
 router.get('/:id', function (req, res, next) {
     return __awaiter(void 0, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-
-            if (!req.params.id)
-                return [2 /*return*/, next()];
-            res.send("vgid");
-            return [2 /*return*/];
+        var ID, _a, _b, _c;
+        return __generator(this, function (_d) {
+            switch (_d.label) {
+                case 0:
+                    if (!req.params.id)
+                        return [2 /*return*/, next()]; //Route Verificator
+                    ID = Number(req.params.id);
+                    if (typeof ID !== 'number' || Number.isNaN(ID))
+                        return [2 /*return*/, res.send({ "msg": "ID Invalido" })];
+                    _b = (_a = res).send;
+                    if (!
+                        //! DB OPERATIVA CON 1000 slots
+                        (ID <= 1300000))
+                        //! DB OPERATIVA CON 1000 slots
+                        return [3 /*break*/, 2];
+                    return [4 /*yield*/, functions_js_1.getById(ID)];
+                case 1:
+                    _c = _d.sent();
+                    return [3 /*break*/, 3];
+                case 2:
+                    _c = functions_js_1.msg("invalid");
+                    _d.label = 3;
+                case 3:
+                    _b.apply(_a, [_c]);
+                    return [2 /*return*/];
+            }
         });
     });
 });

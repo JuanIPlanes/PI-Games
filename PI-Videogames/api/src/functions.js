@@ -36,13 +36,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.getGenres = void 0;
+exports.getById = exports.msg = exports.msgs = exports.getGenres = void 0;
 // GET https://api.rawg.io/api/games
 // GET https://api.rawg.io/api/games?search={game}
 // GET https://api.rawg.io/api/genres
 // GET https://api.rawg.io/api/games/{id}
 var axios_1 = require("axios");
-var API_KEY = process.env.API_KEY, _a = require("./db"), Genre = _a.Genre, Videogame = _a.Videogame;
+var API_KEY = process.env.API_KEY, GAMES_AT_DATE = 586489; //586489 is amount of games in External_Api to Date (21/7/21)
+// const { API_KEY, games_ext_api_count } = process.env
+var _a = require("./db.js"), Genre = _a.Genre, Videogame = _a.Videogame;
 function getGenres() {
     return __awaiter(this, void 0, void 0, function () {
         var _this = this;
@@ -69,3 +71,90 @@ function getGenres() {
     });
 }
 exports.getGenres = getGenres;
+function getGames() {
+    return __awaiter(this, void 0, void 0, function () {
+        var ref;
+        return __generator(this, function (_a) {
+            ref = undefined;
+            axios_1["default"]
+                .get("https://api.rawg.io/api/games?key=" + API_KEY, { responseType: 'json' })
+                .then(function (_a) {
+                var data = _a.data;
+                return ((ref = data.results) && data.results);
+            })
+                .then();
+            return [2 /*return*/];
+        });
+    });
+}
+exports.msgs = {
+    invalid: "el ID introducido no existe",
+    notFound: "ID No Encontrado"
+};
+var msg = function (r) { var _a; return ({ msg: (_a = Object.getOwnPropertyDescriptor(exports.msgs, r)) === null || _a === void 0 ? void 0 : _a.value }); };
+exports.msg = msg;
+function transformDataRecived(game) {
+    var LIST = [
+        'background_image', 'background_image_additional', 'name name_original', 'alternative_names', 'genres', 'description', 'description_raw', 'released updated', 'rating', 'rating_top', 'ratings', 'platform'
+    ];
+    return Object.fromEntries(Object
+        .entries(game)
+        .filter(function (prop) {
+        return LIST.includes(prop[0]);
+    }));
+}
+function getById(id) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function () {
+        var _b, _c;
+        return __generator(this, function (_d) {
+            switch (_d.label) {
+                case 0:
+                    if (!(id > 1000000)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, Videogame.findOne({
+                            where: { id: id },
+                            attributes: {
+                                exclude: ["createdAt", "updatedAt"]
+                            },
+                            include: {
+                                model: Genre,
+                                attributes: ['name', "id"],
+                                through: {
+                                    attributes: []
+                                }
+                            }
+                        })];
+                case 1:
+                    _b = (_a = _d.sent()) !== null && _a !== void 0 ? _a : exports.msg("notFound");
+                    return [3 /*break*/, 6];
+                case 2:
+                    if (!(id < GAMES_AT_DATE || id > 0)) return [3 /*break*/, 4];
+                    return [4 /*yield*/, axios_1["default"]
+                            .get("https://api.rawg.io/api/games/" + id + "?key=" + API_KEY, { responseType: 'json' })
+                            .then(function (_a) {
+                            var data = _a.data;
+                            return data.hasOwnProperty("detail")
+                                ? exports.msg("invalid")
+                                : transformDataRecived(data);
+                        })["catch"](function (error) {
+                            console.log(exports.msg("invalid"));
+                            return ({
+                                error: error.message,
+                                msg: exports.msg("invalid").msg
+                            });
+                        })];
+                case 3:
+                    _c = _d.sent();
+                    return [3 /*break*/, 5];
+                case 4:
+                    _c = exports.msg("invalid");
+                    _d.label = 5;
+                case 5:
+                    _b = _c;
+                    _d.label = 6;
+                case 6: return [2 /*return*/, _b];
+            }
+        });
+    });
+}
+exports.getById = getById;
