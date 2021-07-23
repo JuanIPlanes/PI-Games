@@ -69,7 +69,7 @@ export function dateParser(str:string) {
 
 function transformGameRecived(game: object) {
     const LIST = [
-        'background_image', 'background_image_additional', 'name name_original', 'alternative_names', 'genres', 'description', 'description_raw', 'released updated', 'rating', 'rating_top', 'ratings', 'platform'
+        'background_image', 'background_image_additional', 'name', 'name_original', 'alternative_names', 'genres', 'description', 'description_raw', 'released updated', 'rating', 'rating_top', 'ratings', 'platform'
     ]
     
     return Object.fromEntries(
@@ -95,7 +95,7 @@ export async function getById(id: number): Promise<object> {
 			}
 		}) ?? msg("notFound")
 
-        : id < GAMES_AT_DATE || id > 0
+        : id < GAMES_AT_DATE && id > 0
             ? await axios
                 .get(`https://api.rawg.io/api/games/${id}?key=${API_KEY}`, { responseType: 'json' })
                 .then(({ data }: AxiosResponse) =>
@@ -134,6 +134,7 @@ export async function getByName(name:string) {
             .then(({ data }) => data.results.slice(0,14))
     return {l:locals, e: external}
 }
+
 export interface Props {
     name: string,
     description: string,
@@ -141,6 +142,8 @@ export interface Props {
     releaseDate: string,
     rating: number
 }
+
+
 export async function createGame(props:Props, genres:string[]) {
     const { name, description,
         releaseDate, rating, platform }:Props = props,
@@ -177,7 +180,7 @@ export async function createGame(props:Props, genres:string[]) {
 				exclude: ["createdAt", "updatedAt"]
 			},
                 })
-                .then(async (findedOrCreated: object[]) => {
+                .then(async (findedOrCreated) => {
                     await VIDEOGAME.addGenre(findedOrCreated[0])
                     let ts:object = findedOrCreated[0].dataValues
                     delete ts.createdAt
@@ -200,3 +203,5 @@ export async function createGame(props:Props, genres:string[]) {
 		// 	return {a:e,b:"1"}
 		// }
 	}
+
+    //!?!?!traeme la copa MESSI

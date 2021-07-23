@@ -132,7 +132,7 @@ function dateParser(str) {
 exports.dateParser = dateParser;
 function transformGameRecived(game) {
     var LIST = [
-        'background_image', 'background_image_additional', 'name name_original', 'alternative_names', 'genres', 'description', 'description_raw', 'released updated', 'rating', 'rating_top', 'ratings', 'platform'
+        'background_image', 'background_image_additional', 'name', 'name_original', 'alternative_names', 'genres', 'description', 'description_raw', 'released updated', 'rating', 'rating_top', 'ratings', 'platform'
     ];
     return Object.fromEntries(Object
         .entries(game)
@@ -165,7 +165,7 @@ function getById(id) {
                     _b = (_a = _d.sent()) !== null && _a !== void 0 ? _a : exports.msg("notFound");
                     return [3 /*break*/, 6];
                 case 2:
-                    if (!(id < GAMES_AT_DATE || id > 0)) return [3 /*break*/, 4];
+                    if (!(id < GAMES_AT_DATE && id > 0)) return [3 /*break*/, 4];
                     return [4 /*yield*/, axios_1["default"]
                             .get("https://api.rawg.io/api/games/" + id + "?key=" + API_KEY, { responseType: 'json' })
                             .then(function (_a) {
@@ -312,3 +312,4 @@ function createGame(props, genres) {
     });
 }
 exports.createGame = createGame;
+//!?!?!traeme la copa MESSI

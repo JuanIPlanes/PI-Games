@@ -46,14 +46,14 @@ router.get('/:id', function (req, res, next) { return __awaiter(void 0, void 0, 
             case 0:
                 if (!req.params.id)
                     return [2 /*return*/, next()]; //Route Verificator
-                ID = Number(req.params.id);
+                ID = parseInt(req.params.id);
                 if (typeof ID !== 'number' || Number.isNaN(ID))
                     return [2 /*return*/, res.send({ "msg": "ID Invalido" })];
                 _b = (_a = res).send;
                 if (!
-                //! DB OPERATIVA CON 1000 slots
+                //! DB OPERATIVA CON 300000 slots
                 (ID <= 1300000)) 
-                //! DB OPERATIVA CON 1000 slots
+                //! DB OPERATIVA CON 300000 slots
                 return [3 /*break*/, 2];
                 return [4 /*yield*/, functions_js_1.getById(ID)];
             case 1:
