@@ -9,8 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function () { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function () { return this; }), g;
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -39,35 +39,33 @@ exports.__esModule = true;
 var express = require("express");
 var functions_js_1 = require("../functions.js");
 var router = express.Router();
-router.get('/:id', function (req, res, next) {
-    return __awaiter(void 0, void 0, void 0, function () {
-        var ID, _a, _b, _c;
-        return __generator(this, function (_d) {
-            switch (_d.label) {
-                case 0:
-                    if (!req.params.id)
-                        return [2 /*return*/, next()]; //Route Verificator
-                    ID = Number(req.params.id);
-                    if (typeof ID !== 'number' || Number.isNaN(ID))
-                        return [2 /*return*/, res.send({ "msg": "ID Invalido" })];
-                    _b = (_a = res).send;
-                    if (!
-                        //! DB OPERATIVA CON 1000 slots
-                        (ID <= 1300000))
-                        //! DB OPERATIVA CON 1000 slots
-                        return [3 /*break*/, 2];
-                    return [4 /*yield*/, functions_js_1.getById(ID)];
-                case 1:
-                    _c = _d.sent();
-                    return [3 /*break*/, 3];
-                case 2:
-                    _c = functions_js_1.msg("invalid");
-                    _d.label = 3;
-                case 3:
-                    _b.apply(_a, [_c]);
-                    return [2 /*return*/];
-            }
-        });
+router.get('/:id', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var ID, _a, _b, _c;
+    return __generator(this, function (_d) {
+        switch (_d.label) {
+            case 0:
+                if (!req.params.id)
+                    return [2 /*return*/, next()]; //Route Verificator
+                ID = Number(req.params.id);
+                if (typeof ID !== 'number' || Number.isNaN(ID))
+                    return [2 /*return*/, res.send({ "msg": "ID Invalido" })];
+                _b = (_a = res).send;
+                if (!
+                //! DB OPERATIVA CON 1000 slots
+                (ID <= 1300000)) 
+                //! DB OPERATIVA CON 1000 slots
+                return [3 /*break*/, 2];
+                return [4 /*yield*/, functions_js_1.getById(ID)];
+            case 1:
+                _c = _d.sent();
+                return [3 /*break*/, 3];
+            case 2:
+                _c = functions_js_1.msg("invalid");
+                _d.label = 3;
+            case 3:
+                _b.apply(_a, [_c]);
+                return [2 /*return*/];
+        }
     });
-});
+}); });
 module.exports = router;
