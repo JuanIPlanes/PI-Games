@@ -13,7 +13,8 @@ type Messages = {
     "invalid": string,
     "notFound": string,
     "incorrect": string,
-    "empty": string
+    "empty": string,
+    "gettingByName": string
 }
 type Msg = {
     msg:string
@@ -24,7 +25,9 @@ export const msgs: Messages = {
     invalid: "el ID introducido no existe.",
     notFound: "ID No Encontrado.",
     incorrect: "Los datos enviados son incorrectos. Por favor, revíselos.",
-    empty: "Introduca los Datos Requeridos."
+    empty: "Introduca los Datos Requeridos.",
+    gettingByName: "Error al obtener la lista de juegos. Intente nuevamente o contacte al soporte técnico."
+
 } as const;
 
 export const msg = (r:string, lang?:string) => ({msg: Object.getOwnPropertyDescriptor(msgs,r)?.value});
@@ -113,7 +116,8 @@ export async function getById(id: number): Promise<object> {
 }
         
 export async function getByName(name:string) {
-		let {rows:locals } = await Videogame.findAndCountAll({
+    try {
+        let { rows: locals } = await Videogame.findAndCountAll({
 			limit: 15,
             where: name.length
                 ? {
@@ -128,11 +132,19 @@ export async function getByName(name:string) {
 				attributes: {include:["name", "id"]},
 				through: { attributes: [] }
 			}
-        }).catch((e:Error)=>console.log(e)),
+        }).catch((e:Error)=>{throw {err:e, inLocal:true}}),
         external = await axios
-            .get(`https://api.rawg.io/api/games?search=${name}&key=${API_KEY}&page_size=15`, {responseType:"json"})
-            .then(({ data }) => data.results.slice(0,14))
-    return {l:locals, e: external}
+            .get(`https://api.rawg.io/api/games?search=${name}&key=${API_KEY}`, {responseType:"json"})
+            .then(({ data }) => data.results.slice(0, 14))
+            .catch((e:Error)=>{throw {err:e, inExt:true}})
+        return {l:locals, e: external}
+    } catch (err:any) {
+        console.log(err)
+        return {
+            msg: msg("gettingByName"),
+            error: new Error(err.ert).message
+        }
+    }
 }
 
 export interface Props {

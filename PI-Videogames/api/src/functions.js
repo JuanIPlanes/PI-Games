@@ -63,7 +63,8 @@ exports.msgs = {
     invalid: "el ID introducido no existe.",
     notFound: "ID No Encontrado.",
     incorrect: "Los datos enviados son incorrectos. Por favor, revíselos.",
-    empty: "Introduca los Datos Requeridos."
+    empty: "Introduca los Datos Requeridos.",
+    gettingByName: "Error al obtener la lista de juegos. Intente nuevamente o contacte al soporte técnico."
 };
 var msg = function (r, lang) { var _a; return ({ msg: (_a = Object.getOwnPropertyDescriptor(exports.msgs, r)) === null || _a === void 0 ? void 0 : _a.value }); };
 exports.msg = msg;
@@ -197,37 +198,47 @@ function getById(id) {
 exports.getById = getById;
 function getByName(name) {
     return __awaiter(this, void 0, void 0, function () {
-        var locals, external;
+        var locals, external_1, err_1;
         var _a;
         return __generator(this, function (_b) {
             switch (_b.label) {
-                case 0: return [4 /*yield*/, Videogame.findAndCountAll({
-                        limit: 15,
-                        where: name.length
-                            ? {
-                                name: (_a = {}, _a[sequelize_1.Op.iLike] = "%" + name + "%", _a)
+                case 0:
+                    _b.trys.push([0, 3, , 4]);
+                    return [4 /*yield*/, Videogame.findAndCountAll({
+                            limit: 15,
+                            where: name.length
+                                ? {
+                                    name: (_a = {}, _a[sequelize_1.Op.iLike] = "%" + name + "%", _a)
+                                }
+                                : {},
+                            attributes: {
+                                exclude: ["createdAt", "updatedAt"]
+                            },
+                            include: {
+                                model: Genre,
+                                attributes: { include: ["name", "id"] },
+                                through: { attributes: [] }
                             }
-                            : {},
-                        attributes: {
-                            exclude: ["createdAt", "updatedAt"]
-                        },
-                        include: {
-                            model: Genre,
-                            attributes: { include: ["name", "id"] },
-                            through: { attributes: [] }
-                        }
-                    })["catch"](function (e) { return console.log(e); })];
+                        })["catch"](function (e) { throw { err: e, inLocal: true }; })];
                 case 1:
                     locals = (_b.sent()).rows;
                     return [4 /*yield*/, axios_1["default"]
-                            .get("https://api.rawg.io/api/games?search=" + name + "&key=" + API_KEY + "&page_size=15", { responseType: "json" })
+                            .get("https://api.rawg.io/api/games?search=" + name + "&key=" + API_KEY, { responseType: "json" })
                             .then(function (_a) {
                             var data = _a.data;
                             return data.results.slice(0, 14);
-                        })];
+                        })["catch"](function (e) { throw { err: e, inExt: true }; })];
                 case 2:
-                    external = _b.sent();
-                    return [2 /*return*/, { l: locals, e: external }];
+                    external_1 = _b.sent();
+                    return [2 /*return*/, { l: locals, e: external_1 }];
+                case 3:
+                    err_1 = _b.sent();
+                    console.log(err_1);
+                    return [2 /*return*/, {
+                            msg: exports.msg("gettingByName"),
+                            error: new Error(err_1.ert).message
+                        }];
+                case 4: return [2 /*return*/];
             }
         });
     });

@@ -38,13 +38,23 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var express = require("express");
 var router = express.Router();
+var functions_js_1 = require("../functions.js");
 router.get('/', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        console.log(req.body);
-        if (!Object.entries(req.query).length)
-            return [2 /*return*/, next()];
-        res.send("vgname");
-        return [2 /*return*/];
+    var NAME, _a, _b;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
+            case 0:
+                if (!req.query.hasOwnProperty('name'))
+                    return [2 /*return*/, next()];
+                NAME = String(req.query.name).replace("%", ' ').trim();
+                if (typeof NAME !== 'string' || NAME.length < 2)
+                    return [2 /*return*/, res.send({ msg: 'Nombre invalido' })];
+                _b = (_a = res).send;
+                return [4 /*yield*/, functions_js_1.getByName(NAME)];
+            case 1:
+                _b.apply(_a, [_c.sent()]); //Obtain Search of LOCAL_DB, and EXT_API_DB
+                return [2 /*return*/];
+        }
     });
 }); });
 module.exports = router;
