@@ -5,9 +5,7 @@ const router = require('express').Router()
     , postGame = require('./post_game');
 
 // Configurar los routers
-router.use('/', postGame);
-router.use('/', getById);
-router.use('/', getByName);
+router.use('/', postGame, getById, getByName);
 router.get('/', gameList);
 
 module.exports = router;
