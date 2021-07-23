@@ -5,17 +5,23 @@ import { msg, Props, createGame, arrayChecker, dateChecker, dateParser } from ".
 router.post('/', async (req, res) => {
     //! props
     let body = { ...req.body }
-        , { name, description, releaseDate, rating, platform }: Props = body
+        , { name, description, releaseDate, rating, platform, imageURL }: Props = body
         , { genres } = req.body;
     delete body.genres;
     //! verification have all props
-    if (!['name', 'description', 'releaseDate', 'rating', 'platform']
+    if (!['name', 'description', 'releaseDate', 'rating', 'platform', "imageURL"]
         .every((prop: string) =>
             Object.entries(body).some((propName: Array<any>) =>
                 propName[0] === prop)
     )
     ) return res.send(msg("empty"))
     //! verification all props are correct
+    // let veracityImage: Promise<object> = await (async () => await new Promise((res):object => res(new URL(imageURL))))()
+    //     .then((e):object=>e)
+    //     .finally((url:void) => console.log(url))
+    let _URL = await (async () => await new Promise(res => res(new URL(imageURL))))()
+        .catch((url) => ({ url, message:"invalid imageURL"}))
+    if (_URL?.message ?? false) return res.send(msg("incorrect"))
     if (
         (typeof name !== "string"||
             name.length < 3 ||  //? name checher

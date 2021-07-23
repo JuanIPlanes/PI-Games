@@ -41,6 +41,10 @@ module.exports = (sequelize) => {
       type: STRING(255),
       allowNull: false,
     },
+    imageURL: {
+      type: STRING,
+      allowNull: false,
+    },
     releaseDate: {
       type: DATE,
       allowNull: true,

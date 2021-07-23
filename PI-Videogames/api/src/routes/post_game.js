@@ -32,14 +32,22 @@ const express = __importStar(require("express"));
 const router = express.Router();
 const functions_js_1 = require("../functions.js");
 router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     //! props
-    let body = Object.assign({}, req.body), { name, description, releaseDate, rating, platform } = body, { genres } = req.body;
+    let body = Object.assign({}, req.body), { name, description, releaseDate, rating, platform, imageURL } = body, { genres } = req.body;
     delete body.genres;
     //! verification have all props
-    if (!['name', 'description', 'releaseDate', 'rating', 'platform']
+    if (!['name', 'description', 'releaseDate', 'rating', 'platform', "imageURL"]
         .every((prop) => Object.entries(body).some((propName) => propName[0] === prop)))
         return res.send(functions_js_1.msg("empty"));
     //! verification all props are correct
+    // let veracityImage: Promise<object> = await (async () => await new Promise((res):object => res(new URL(imageURL))))()
+    //     .then((e):object=>e)
+    //     .finally((url:void) => console.log(url))
+    let _URL = yield (() => __awaiter(void 0, void 0, void 0, function* () { return yield new Promise(res => res(new URL(imageURL))); }))()
+        .catch((url) => ({ url, message: "invalid imageURL" }));
+    if ((_a = _URL === null || _URL === void 0 ? void 0 : _URL.message) !== null && _a !== void 0 ? _a : false)
+        return res.send(functions_js_1.msg("incorrect"));
     if ((typeof name !== "string" ||
         name.length < 3 || //? name checher
         name.length > 30) ||

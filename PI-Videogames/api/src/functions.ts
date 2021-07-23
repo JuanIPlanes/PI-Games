@@ -3,6 +3,7 @@
 // GET https://api.rawg.io/api/genres
 // GET https://api.rawg.io/api/games/{id}
 import axios, { AxiosPromise, AxiosResponse } from "axios"
+import { OptionsUrlencoded } from "body-parser";
 import { Op } from "sequelize"
 const { API_KEY } = process.env,
 GAMES_AT_DATE = 586489; //586489 is amount of games in External_Api to Date (21/7/21)
@@ -42,13 +43,43 @@ export async function getGenres():Promise<void> {
         //!create all genres in db
 }
 
-async function getGames() {
-    let ref = undefined;
-    axios
-        .get(`https://api.rawg.io/api/games?key=${API_KEY}`, { responseType: 'json' })
-        .then(({ data }) =>((ref=data.results)&&data.results))
-        .then()
+export type Params = {
+    offset: number,
+    order?: string
 }
+
+export async function getGames({offset=0, order="ASC" }:Params, next?:string) {
+    try{
+        let ext = axios
+            .get(next??"https://api.rawg.io/api/games"+`?key=${API_KEY}`, { responseType: 'json' })
+            .then(({ data }) => data.results)
+            .then((vg)=> vg.map(({id, name, })=>{}))
+            .catch((e: Error) => { throw { err: e, inExt: true } })
+            , { rows: locals } = await Videogame.findAndCountAll({
+                limit: 15,
+                offset,
+                order,
+                attributes: {
+                    attributes: { include: ["name", "id", "imageURL",  ] },
+                    through: { attributes: [] }
+                },
+                include: {
+                    model: Genre,
+                    attributes: { include: ["name", "id"] },
+                    through: { attributes: [] }
+                }
+            }).catch((e: Error) => { throw { err: e, inLocal: true } });
+        
+        return {ext,locals}
+    }catch (err:any) {
+        console.log(err)
+        return {
+            msg: msg("gettingByName"),
+            error: new Error(err.err).message
+        }
+    }
+}
+
 export function arrayChecker(arr: string[]) {
     return !(
         Array.isArray(arr) && arr.length &&
@@ -56,6 +87,7 @@ export function arrayChecker(arr: string[]) {
             typeof (str) === "string" && str.length > 1 && str.length < 30)
     )
 }
+
 export function dateChecker(str:string) {
     return (str.length >= 10 &&
         Number.isNaN(Date.parse(str)))
@@ -82,6 +114,7 @@ function transformGameRecived(game: object) {
             LIST.includes(prop[0])
         ))
 }
+
 export async function getById(id: number): Promise<object> {
     return id > 1000000
         ? await Videogame.findOne({
@@ -142,7 +175,7 @@ export async function getByName(name:string) {
         console.log(err)
         return {
             msg: msg("gettingByName"),
-            error: new Error(err.ert).message
+            error: new Error(err.err).message
         }
     }
 }
@@ -152,13 +185,13 @@ export interface Props {
     description: string,
     platform: Array<string>,
     releaseDate: string,
-    rating: number
+    rating: number,
+    imageURL: string
 }
-
 
 export async function createGame(props:Props, genres:string[]) {
     const { name, description,
-        releaseDate, rating, platform }:Props = props,
+        releaseDate, rating, platform, imageURL }:Props = props,
         GENRES:Promise<Promise<object>>[] = [];
 		// try {
     const [VIDEOGAME, VGCreated] = await Videogame.findOrCreate({
@@ -167,6 +200,7 @@ export async function createGame(props:Props, genres:string[]) {
             name,
             description,
             platform,
+            imageURL,
             releaseDate: dateParser(releaseDate) ? new Date(releaseDate) : null,
             rating: parseFloat(rating) ?? null 
         },
