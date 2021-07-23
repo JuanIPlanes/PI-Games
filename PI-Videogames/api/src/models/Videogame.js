@@ -9,7 +9,7 @@ function* IDS() {
 }
 module.exports = (sequelize) => {
   const IDMkr = IDS()
-  const { INTEGER, STRING, DATE } = DataTypes;
+  const { INTEGER, FLOAT, STRING, DATE } = DataTypes;
   // defino el modelo
   sequelize.define('videogame', self = {
     id: {
@@ -50,7 +50,7 @@ module.exports = (sequelize) => {
       allowNull: true,
     },
     rating: {
-      type: INTEGER,
+      type: FLOAT,
       allowNull: true,
     },
     platform: {
