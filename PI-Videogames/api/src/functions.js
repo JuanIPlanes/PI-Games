@@ -46,6 +46,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
+};
 exports.__esModule = true;
 exports.createGame = exports.getByName = exports.getById = exports.dateParser = exports.dateChecker = exports.arrayChecker = exports.getGames = exports.getGenres = exports.msg = exports.msgs = void 0;
 // GET https://api.rawg.io/api/games
@@ -94,48 +99,79 @@ function getGenres() {
     });
 }
 exports.getGenres = getGenres;
+var Order = {
+    DESC: [-1, 0, 1],
+    ASC: [1, 0, -1]
+};
 function getGames(_a, next) {
-    var _b = _a.offset, offset = _b === void 0 ? 0 : _b, _c = _a.order, order = _c === void 0 ? "ASC" : _c;
+    var _b = _a.offset, offset = _b === void 0 ? 0 : _b, _c = _a.order, order = _c === void 0 ? "ASC" : _c, _d = _a.by, by = _d === void 0 ? "name" : _d;
     return __awaiter(this, void 0, void 0, function () {
-        var ext, locals, err_1;
-        return __generator(this, function (_d) {
-            switch (_d.label) {
+        var url, ext, locals, err_1;
+        return __generator(this, function (_e) {
+            switch (_e.label) {
                 case 0:
-                    _d.trys.push([0, 2, , 3]);
-                    ext = axios_1["default"]
-                        .get(next !== null && next !== void 0 ? next : "https://api.rawg.io/api/games" + ("?key=" + API_KEY), { responseType: 'json' })
-                        .then(function (_a) {
-                        var data = _a.data;
-                        return data.results;
-                    })
-                        .then(function (vg) { return vg.map(function (_a) {
-                        var id = _a.id, name = _a.name;
-                    }); })["catch"](function (e) { throw { err: e, inExt: true }; });
+                    url = next === undefined
+                        ? "https://api.rawg.io/api/games?key=" + API_KEY
+                        : next.toString();
+                    console.log(url);
+                    _e.label = 1;
+                case 1:
+                    _e.trys.push([1, 4, , 5]);
+                    return [4 /*yield*/, axios_1["default"]
+                            .get(url, { responseType: 'json' })
+                            .then(function (_a) {
+                            var data = _a.data;
+                            return ({ results: data.results, nextLink: data.next });
+                        })
+                            .then(function (_a) {
+                            var results = _a.results, nextLink = _a.nextLink;
+                            return ({
+                                results: results.map(function (_a) {
+                                    var id = _a.id, name = _a.name, imageURL = _a.background_image, imageURL_a = _a.background_image_additional, genres = _a.genres, rating = _a.rating;
+                                    return ({ id: id, name: name, imageURL: imageURL, imageURL_a: imageURL_a, rating: rating, genres: genres.map(function (_a) {
+                                            var id = _a.id, name = _a.name;
+                                            return ({ id: id, name: name });
+                                        }) });
+                                }),
+                                next: nextLink
+                            });
+                        })["catch"](function (e) { throw { err: e, inExt: true }; })];
+                case 2:
+                    ext = _e.sent();
                     return [4 /*yield*/, Videogame.findAndCountAll({
                             limit: 15,
                             offset: offset,
-                            order: order,
-                            attributes: {
-                                attributes: { include: ["name", "id", "imageURL",] },
-                                through: { attributes: [] }
-                            },
+                            orderBy: [by, order],
+                            attributes: ["name", "id", "imageURL", "rating"],
+                            through: { attributes: [] },
                             include: {
                                 model: Genre,
-                                attributes: { include: ["name", "id"] },
+                                attributes: ["name", "id"],
                                 through: { attributes: [] }
                             }
                         })["catch"](function (e) { throw { err: e, inLocal: true }; })];
-                case 1:
-                    locals = (_d.sent()).rows;
-                    return [2 /*return*/, { ext: ext, locals: locals }];
-                case 2:
-                    err_1 = _d.sent();
+                case 3:
+                    locals = (_e.sent()).rows;
+                    console.log("-------------------**/--");
+                    return [2 /*return*/, {
+                            next: ext.next,
+                            results: __spreadArray(__spreadArray([], ext.results), locals).sort(function (_a, _b) {
+                                var name1 = _a.name, rating1 = _a.rating;
+                                var name2 = _b.name, rating2 = _b.rating;
+                                return by === "rating"
+                                    ? rating1 > rating2 ? Order[order][0] : rating1 === rating2 ? Order[order][1] : Order[order][2]
+                                    : name1.localeCompare(name2) * (order === "ASC" ? 1 : -1);
+                            })
+                            // .map((e: object) => delete e.rating && e)
+                        }];
+                case 4:
+                    err_1 = _e.sent();
                     console.log(err_1);
                     return [2 /*return*/, {
                             msg: exports.msg("gettingByName"),
-                            error: new Error(err_1.err).message
+                            error: err_1
                         }];
-                case 3: return [2 /*return*/];
+                case 5: return [2 /*return*/];
             }
         });
     });
@@ -164,7 +200,7 @@ function dateParser(str) {
 exports.dateParser = dateParser;
 function transformGameRecived(game) {
     var LIST = [
-        'background_image', 'background_image_additional', 'name', 'name_original', 'alternative_names', 'genres', 'description', 'description_raw', 'released updated', 'rating', 'rating_top', 'ratings', 'platform'
+        'background_image', 'background_image_additional', 'name', 'name_original', 'alternative_names', 'genres', 'description', 'description_raw', 'released', 'updated', 'rating', 'rating_top', 'ratings', 'platform'
     ];
     return Object.fromEntries(Object
         .entries(game)
@@ -328,7 +364,6 @@ function createGame(props, genres) {
                                         ts = findedOrCreated[0].dataValues;
                                         delete ts.createdAt;
                                         delete ts.updatedAt;
-                                        console.log(ts);
                                         return [2 /*return*/, ts];
                                 }
                             });

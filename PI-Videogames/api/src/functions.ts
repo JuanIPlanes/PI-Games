@@ -43,39 +43,71 @@ export async function getGenres():Promise<void> {
         //!create all genres in db
 }
 
-export type Params = {
+export interface Params {
     offset: number,
-    order?: string
+    order?: or,
+    by?: by
+}
+export type or = "ASC" | "DESC"
+export type by = "name"|"rating"
+interface ExtParams  {
+    id: number,
+    name: string,
+    background_image_additional:string,
+    background_image: string,
+    genres: Array<object>,
+    rating: number
+}
+const Order = {
+    DESC: [-1, 0, 1],
+    ASC: [1, 0, -1]
 }
 
-export async function getGames({offset=0, order="ASC" }:Params, next?:string) {
+export async function getGames({ offset = 0, order = "ASC", by = "name" }: Params, next?: string) {
+    const url = next===undefined
+        ? `https://api.rawg.io/api/games?key=${API_KEY}`
+        : next.toString()
+        console.log(url)
     try{
-        let ext = axios
-            .get(next??"https://api.rawg.io/api/games"+`?key=${API_KEY}`, { responseType: 'json' })
-            .then(({ data }) => data.results)
-            .then((vg)=> vg.map(({id, name, })=>{}))
-            .catch((e: Error) => { throw { err: e, inExt: true } })
-            , { rows: locals } = await Videogame.findAndCountAll({
-                limit: 15,
-                offset,
-                order,
-                attributes: {
-                    attributes: { include: ["name", "id", "imageURL",  ] },
-                    through: { attributes: [] }
-                },
-                include: {
-                    model: Genre,
-                    attributes: { include: ["name", "id"] },
-                    through: { attributes: [] }
-                }
-            }).catch((e: Error) => { throw { err: e, inLocal: true } });
-        
-        return {ext,locals}
+        let ext = await axios
+            .get(url, { responseType: 'json' })
+            .then(({ data }) => ({results:data.results, nextLink:data.next}))
+            .then(({ results, nextLink }) => ({
+                results: results.map((
+                    { id, name, background_image: imageURL,
+                        background_image_additional: imageURL_a, genres, rating }:ExtParams) =>
+                    ({ id, name, imageURL, imageURL_a, rating, genres:genres.map(({id, name})=>({id, name})) })),
+                next:nextLink
+            }))
+            .catch((e: Error) => { throw { err: e, inExt: true } });
+        let { rows: locals } = await Videogame.findAndCountAll({
+            limit: 15,
+            offset,
+            orderBy: [by, order],
+            attributes: ["name", "id", "imageURL", "rating"],
+            through: { attributes: [] },
+            include: {
+                model: Genre,
+                attributes: ["name", "id"],
+                through: { attributes: [] }
+            }
+        }).catch((e: Error) => { throw { err: e, inLocal: true } });
+            console.log("-------------------**/--")
+        return {
+            next: ext.next,
+            results: [...ext.results, ...locals]
+                .sort(({ name: name1, rating: rating1 }, { name: name2, rating: rating2 }) => {
+                    return by === "rating"
+                        ? rating1 > rating2 ? Order[order][0] : rating1 === rating2 ? Order[order][1] : Order[order][2]
+                        : name1.localeCompare(name2) * (order === "ASC" ? 1 : -1)
+                })
+                // .map((e: object) => delete e.rating && e)
+        }
     }catch (err:any) {
         console.log(err)
         return {
             msg: msg("gettingByName"),
-            error: new Error(err.err).message
+            error: err
         }
     }
 }
@@ -104,7 +136,7 @@ export function dateParser(str:string) {
 
 function transformGameRecived(game: object) {
     const LIST = [
-        'background_image', 'background_image_additional', 'name', 'name_original', 'alternative_names', 'genres', 'description', 'description_raw', 'released updated', 'rating', 'rating_top', 'ratings', 'platform'
+        'background_image', 'background_image_additional', 'name', 'name_original', 'alternative_names', 'genres', 'description', 'description_raw', 'released', 'updated', 'rating', 'rating_top', 'ratings', 'platform'
     ]
     
     return Object.fromEntries(
@@ -231,7 +263,6 @@ export async function createGame(props:Props, genres:string[]) {
                     let ts:object = findedOrCreated[0].dataValues
                     delete ts.createdAt
                     delete ts.updatedAt
-                    console.log(ts)
                     return ts
 		            })
                 .catch((err: any) => {throw err})

@@ -29,6 +29,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = __importStar(require("express"));
+const functions_1 = require("../functions");
 const router = express.Router();
-router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () { return res.send("glist"); }));
+// GET https://api.rawg.io/api/games
+// GET https://api.rawg.io/api/games?search={game}
+// GET https://api.rawg.io/api/genres
+// GET https://api.rawg.io/api/games/{id}
+router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    let _URL, { offset = 0, order = "ASC", by = "name" } = req.query, { next = undefined } = req.body;
+    //!verify that NEXT is valid
+    _URL = next === undefined ? false : yield (() => __awaiter(void 0, void 0, void 0, function* () { return yield new Promise(res => res(new URL(next))); }))()
+        .catch((url) => ({ url, message: "invalid imageURL" }));
+    if (((_a = _URL === null || _URL === void 0 ? void 0 : _URL.message) !== null && _a !== void 0 ? _a : false) ||
+        !["DESC", "ASC"].includes(order) ||
+        !["name", "rating"].includes(by) ||
+        Number.isNaN(parseInt(offset)))
+        return res.send(functions_1.msg("incorrect"));
+    const GameList = yield functions_1.getGames({ offset: Number(offset), order, by }, next).catch(e => e);
+    // if (GameList.hasOwnProperty("msg")) {
+    //     console.log(`------->----->---->${GameList.msg}<----<-----<-------`)
+    //     return res.send({
+    //         lastmsg: "------->----->---->" + GameList.toString() + "<----<-----<-------",
+    //         next: _URL
+    //     })
+    // }
+    return res.send(GameList);
+}));
 module.exports = router;
