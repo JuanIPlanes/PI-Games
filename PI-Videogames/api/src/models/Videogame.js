@@ -1,8 +1,8 @@
-const { UUIDV4, DataTypes } = require('sequelize');
+const { UUIDV4, DataTypes, ARRAY } = require('sequelize');
 // Exportamos una funcion que define el modelo
 // Luego le injectamos la conexion a sequelize.
 function* IDS() {
-  _default = 500
+  _default = 1000000
   while (true) {
     yield _default += 1
   }
@@ -49,8 +49,8 @@ module.exports = (sequelize) => {
       type: INTEGER,
       allowNull: true,
     },
-    plataform: {
-      type: STRING(30),
+    platform: {
+      type: ARRAY(STRING(30)),
       allowNull: false,
     }
   });

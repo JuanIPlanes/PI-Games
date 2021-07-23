@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -36,15 +47,26 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.getById = exports.msg = exports.msgs = exports.getGenres = void 0;
+exports.createGame = exports.getByName = exports.getById = exports.dateParser = exports.dateChecker = exports.arrayChecker = exports.getGenres = exports.msg = exports.msgs = void 0;
 // GET https://api.rawg.io/api/games
 // GET https://api.rawg.io/api/games?search={game}
 // GET https://api.rawg.io/api/genres
 // GET https://api.rawg.io/api/games/{id}
 var axios_1 = require("axios");
+var sequelize_1 = require("sequelize");
 var API_KEY = process.env.API_KEY, GAMES_AT_DATE = 586489; //586489 is amount of games in External_Api to Date (21/7/21)
 // const { API_KEY, games_ext_api_count } = process.env
 var _a = require("./db.js"), Genre = _a.Genre, Videogame = _a.Videogame;
+// export const msgs_en: Messages = { }
+// export const msgs_es: Messages_es = {
+exports.msgs = {
+    invalid: "el ID introducido no existe.",
+    notFound: "ID No Encontrado.",
+    incorrect: "Los datos enviados son incorrectos. Por favor, revíselos.",
+    empty: "Introduca los Datos Requeridos."
+};
+var msg = function (r, lang) { var _a; return ({ msg: (_a = Object.getOwnPropertyDescriptor(exports.msgs, r)) === null || _a === void 0 ? void 0 : _a.value }); };
+exports.msg = msg;
 function getGenres() {
     return __awaiter(this, void 0, void 0, function () {
         var _this = this;
@@ -87,13 +109,28 @@ function getGames() {
         });
     });
 }
-exports.msgs = {
-    invalid: "el ID introducido no existe",
-    notFound: "ID No Encontrado"
-};
-var msg = function (r) { var _a; return ({ msg: (_a = Object.getOwnPropertyDescriptor(exports.msgs, r)) === null || _a === void 0 ? void 0 : _a.value }); };
-exports.msg = msg;
-function transformDataRecived(game) {
+function arrayChecker(arr) {
+    return !(Array.isArray(arr) && arr.length &&
+        arr.every(function (str) {
+            return typeof (str) === "string" && str.length > 1 && str.length < 30;
+        }));
+}
+exports.arrayChecker = arrayChecker;
+function dateChecker(str) {
+    return (str.length >= 10 &&
+        Number.isNaN(Date.parse(str)));
+}
+exports.dateChecker = dateChecker;
+function dateParser(str) {
+    return str.length >= 10 &&
+        !Number.isNaN(Date.parse(str))
+        ? new Date(str)
+            .toUTCString() //transforming format to "yyyy-mm-ddThh-min-sc.mscZ"
+            .slice(5, 16) //extracting only y-m-d
+        : false;
+}
+exports.dateParser = dateParser;
+function transformGameRecived(game) {
     var LIST = [
         'background_image', 'background_image_additional', 'name name_original', 'alternative_names', 'genres', 'description', 'description_raw', 'released updated', 'rating', 'rating_top', 'ratings', 'platform'
     ];
@@ -135,7 +172,7 @@ function getById(id) {
                             var data = _a.data;
                             return data.hasOwnProperty("detail")
                                 ? exports.msg("invalid")
-                                : transformDataRecived(data);
+                                : transformGameRecived(data);
                         })["catch"](function (error) {
                             console.log(exports.msg("invalid"));
                             return ({
@@ -158,3 +195,120 @@ function getById(id) {
     });
 }
 exports.getById = getById;
+function getByName(name) {
+    return __awaiter(this, void 0, void 0, function () {
+        var locals, external;
+        var _a;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0: return [4 /*yield*/, Videogame.findAndCountAll({
+                        limit: 15,
+                        where: name.length
+                            ? {
+                                name: (_a = {}, _a[sequelize_1.Op.iLike] = "%" + name + "%", _a)
+                            }
+                            : {},
+                        attributes: {
+                            exclude: ["createdAt", "updatedAt"]
+                        },
+                        include: {
+                            model: Genre,
+                            attributes: { include: ["name", "id"] },
+                            through: { attributes: [] }
+                        }
+                    })["catch"](function (e) { return console.log(e); })];
+                case 1:
+                    locals = (_b.sent()).rows;
+                    return [4 /*yield*/, axios_1["default"]
+                            .get("https://api.rawg.io/api/games?search=" + name + "&key=" + API_KEY + "&page_size=15", { responseType: "json" })
+                            .then(function (_a) {
+                            var data = _a.data;
+                            return data.results.slice(0, 14);
+                        })];
+                case 2:
+                    external = _b.sent();
+                    return [2 /*return*/, { l: locals, e: external }];
+            }
+        });
+    });
+}
+exports.getByName = getByName;
+function createGame(props, genres) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function () {
+        var name, description, releaseDate, rating, platform, GENRES, _b, VIDEOGAME, VGCreated;
+        var _this = this;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    name = props.name, description = props.description, releaseDate = props.releaseDate, rating = props.rating, platform = props.platform, GENRES = [];
+                    return [4 /*yield*/, Videogame.findOrCreate({
+                            where: { name: name },
+                            defaults: {
+                                name: name,
+                                description: description,
+                                platform: platform,
+                                releaseDate: dateParser(releaseDate) ? new Date(releaseDate) : null,
+                                rating: (_a = parseFloat(rating)) !== null && _a !== void 0 ? _a : null
+                            },
+                            attributes: {
+                                exclude: ["createdAt", "updatedAt"]
+                            },
+                            include: {
+                                model: Genre,
+                                attributes: ['name', "id"],
+                                through: {
+                                    attributes: []
+                                }
+                            }
+                        })["catch"](function (e) { throw e; })];
+                case 1:
+                    _b = _c.sent(), VIDEOGAME = _b[0], VGCreated = _b[1];
+                    if (!VGCreated)
+                        return [2 /*return*/, { created: VGCreated, game: VIDEOGAME }];
+                    genres.forEach(function (genre) {
+                        GENRES.push(Genre
+                            .findOrCreate({
+                            where: { name: genre },
+                            defaults: { name: genre },
+                            attributes: {
+                                exclude: ["createdAt", "updatedAt"]
+                            }
+                        })
+                            .then(function (findedOrCreated) { return __awaiter(_this, void 0, void 0, function () {
+                            var ts;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, VIDEOGAME.addGenre(findedOrCreated[0])];
+                                    case 1:
+                                        _a.sent();
+                                        ts = findedOrCreated[0].dataValues;
+                                        delete ts.createdAt;
+                                        delete ts.updatedAt;
+                                        console.log(ts);
+                                        return [2 /*return*/, ts];
+                                }
+                            });
+                        }); })["catch"](function (err) { throw err; }));
+                    });
+                    return [4 /*yield*/, Promise.all(GENRES)
+                            .then(function (r) {
+                            var vgToSend = __assign(__assign({}, VIDEOGAME.dataValues), { genres: r !== null && r !== void 0 ? r : null, created: VGCreated });
+                            delete vgToSend.createdAt;
+                            delete vgToSend.updatedAt;
+                            return vgToSend;
+                        })["catch"](function (e) { throw e; })
+                        // } catch (e:any) {
+                        // 	return {a:e,b:"1"}
+                        // }
+                    ];
+                case 2: return [2 /*return*/, _c.sent()
+                    // } catch (e:any) {
+                    // 	return {a:e,b:"1"}
+                    // }
+                ];
+            }
+        });
+    });
+}
+exports.createGame = createGame;

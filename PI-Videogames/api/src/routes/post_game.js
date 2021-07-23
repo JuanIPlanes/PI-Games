@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -38,7 +49,39 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var express = require("express");
 var router = express.Router();
-router.post('/', function (req, res) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
-    return [2 /*return*/, res.send("pogames")];
-}); }); });
+var functions_js_1 = require("../functions.js");
+router.post('/', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var body, name, description, releaseDate, rating, platform, genres, _a, _b;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
+            case 0:
+                body = __assign({}, req.body), name = body.name, description = body.description, releaseDate = body.releaseDate, rating = body.rating, platform = body.platform, genres = req.body.genres;
+                delete body.genres;
+                //! verification have all props
+                if (!['name', 'description', 'releaseDate', 'rating', 'platform']
+                    .every(function (prop) {
+                    return Object.entries(body).some(function (propName) {
+                        return propName[0] === prop;
+                    });
+                }))
+                    return [2 /*return*/, res.send(functions_js_1.msg("empty"))
+                        //! verification all props are correct
+                    ];
+                //! verification all props are correct
+                if ((typeof name !== "string" ||
+                    name.length < 3 || //? name checher
+                    name.length > 30) ||
+                    typeof description !== "string" || //? desc checher
+                    functions_js_1.arrayChecker(platform) || //? platform checher
+                    functions_js_1.dateChecker(releaseDate) || //? Date checher X
+                    Number.isNaN(parseFloat(rating)) || //? Rating checher
+                    (genres ? functions_js_1.arrayChecker(genres) : !!0) //? Genres checher
+                )
+                    return [2 /*return*/, res.send(functions_js_1.msg("incorrect"))];
+                _b = (_a = res).send;
+                return [4 /*yield*/, functions_js_1.createGame(body, genres)];
+            case 1: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+        }
+    });
+}); });
 module.exports = router;
