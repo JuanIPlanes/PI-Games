@@ -1,18 +1,21 @@
-const INIT = 'LOADED', LOADING = 'LOADING'
-export const LOADED = { type: INIT }
-export const LOAD = { type: LOADING }
 
-export default function LoadedPage(state = { loaded: false, loading: false }, action) {
+
+
+const LOAD = ["LOADING", "LOADED"]
+export const Loaded = { type: LOAD[1] }
+export const Loading = { type: LOAD[0] }
+//! loading (true)  |  loaded (false)
+export default function LoadedPage(state = { load: true }, action) {
     switch (action.type) {
-        case INIT:
+        case LOAD[0]:
             return {
                 ...state,
-                loaded: true
+                load: true
             }
-        case LOADING:
+        case LOAD[1]:
             return {
                 ...state,
-                loading: !state.loading
+                load: false
             }
         default:
             return {
