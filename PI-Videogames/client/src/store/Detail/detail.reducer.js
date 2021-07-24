@@ -1,3 +1,5 @@
+
+
 import { NOT_FOUND, DETAILS } from "./detail.action"
 
 const initialState = {
@@ -12,7 +14,7 @@ const initialState = {
         genres: []
     }
 }
-let DetailReducer
+let DetailReducer;
 export default DetailReducer = (state = initialState, { type, payload }) => {
     switch (type) {
         case DETAILS:

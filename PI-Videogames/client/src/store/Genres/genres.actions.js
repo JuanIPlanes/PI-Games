@@ -1,3 +1,5 @@
+
+
 export const SET = 'SET_GENRES', FILTRES = "SET_FILTRES", REMOVE = "REMOVE_FILTRES";
 
 export function setGenres(types) {
